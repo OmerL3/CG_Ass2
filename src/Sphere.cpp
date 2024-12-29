@@ -47,11 +47,35 @@ glm::vec3 Sphere::get_intersection(Ray ray)
     float t1 = t_m - t_h;
     float t2 = t_m + t_h;
 
-    if (t1 >= 0) return ray.at(t1);
+    if (t1 >= 0) return ray.at(t1); 
     if (t2 >= 0) return ray.at(t2);
     return glm::vec3(std::numeric_limits<float>::infinity());
 }
 
+glm::vec3 Sphere::get_furthest_intersection(Ray ray)
+{
+    glm::vec3 ray_V = glm::normalize(ray.get_direction());
+    glm::vec3 ray_P0 = ray.get_start();
+
+    glm::vec3 vector_L = center - ray_P0;
+
+    float t_m = glm::dot(ray_V, vector_L);
+
+    float d_squared = glm::dot(vector_L, vector_L) - (t_m*t_m);
+
+    float r_squared = radius * radius;
+
+    if(d_squared > r_squared) return glm::vec3(std::numeric_limits<float>::infinity());
+
+    float t_h = glm::sqrt(r_squared - d_squared);
+
+    float t1 = t_m - t_h;
+    float t2 = t_m + t_h;
+
+    if (t2 >= 0) return ray.at(t2);
+    if (t1 >= 0) return ray.at(t1); 
+    return glm::vec3(std::numeric_limits<float>::infinity());
+}
 
 
 Ray Sphere::calc_snell(glm::vec3 point, glm::vec3 L) 
@@ -69,7 +93,7 @@ Ray Sphere::calc_snell(glm::vec3 point, glm::vec3 L)
 
     glm::vec3 T = glm::normalize((refract_in * cos_theta_i - cos_theta_r) * N - refract_in * L);
 
-    glm::vec3 exit_point = get_intersection(Ray(point + epsilon * T, T));
+    glm::vec3 exit_point = get_furthest_intersection(Ray(point + epsilon * T, T));
     if(exit_point == glm::vec3(std::numeric_limits<float>::infinity())) 
         std::cout<< "point " + std::to_string(point.x) + ","+ std::to_string(point.y) + "," + std::to_string(point.z) + " has no exit point"<<std::endl;;
 
@@ -95,22 +119,16 @@ Ray Sphere::calc_snell(glm::vec3 point, glm::vec3 L)
 
 //     glm::vec3 N = get_normal(point);
 
-//     glm::vec3 T = glm::refract(glm::normalize(L), N, refract_in);
+//     glm::vec3 T = glm::normalize(glm::refract(-glm::normalize(L), N, refract_in));
 
-//     if (glm::length(T) < epsilon) 
-//         return Ray(point, glm::reflect(L, N)); 
-
-//     glm::vec3 exit_point = get_intersection(Ray(point + epsilon * T, T));
+//     glm::vec3 exit_point = get_furthest_intersection(Ray(point + epsilon * T, T));
 //     if (exit_point == glm::vec3(std::numeric_limits<float>::infinity())) {
 //         std::cout << "point " << point.x << "," << point.y << "," << point.z << " has no exit point" << std::endl;
 //         return Ray(point, glm::vec3(0)); 
 //     }
 
 //     glm::vec3 exit_normal = -get_normal(exit_point);
-//     T = glm::refract(T, exit_normal, refract_out);
-
-//     if (glm::length(T) < epsilon) 
-//         return Ray(exit_point, glm::reflect(-T, exit_normal));
+//     T = glm::normalize(glm::refract(T, exit_normal, refract_out));
 
 //     return Ray(exit_point + epsilon * T, T);
 // }

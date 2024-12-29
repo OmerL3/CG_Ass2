@@ -388,7 +388,6 @@ glm::vec3 single_pixel_phong(Intersection* point, vector<Light*>& lights, vector
             Intersection* nextP = single_find_intersection(refractiveRay, objects);
             for(size_t i = 1; i<lights.size(); i++)
             {
-                // if(lights[i]->is_spotlight() && !obj->is_plane() && !obj->is_normal() && !obj->is_reflective()) cout<<"check the transparent sphere with spotlight"<<endl;
                 if(!lights[i]->is_shadowed(point, objects))
                 {
 
@@ -566,6 +565,11 @@ int main()
             delete object;
         }
         objects.clear();
+
+        for (Intersection* inter : intersectPoints) {
+            delete inter;
+        }
+        intersectPoints.clear();
 
         cout<< "Ray tracing scene " + to_string(sceneNum) + " -> COMPLETED" <<endl;
         cout << "\nAgain? (enter y for another one)" <<endl;
